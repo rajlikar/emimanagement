@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pay', [PaymentController::class, 'payAmount'])->name('pay');
     Route::post('/create-order', [PaymentController::class, 'createRazorpayOrder']);
     Route::post('/verify-payment', [PaymentController::class, 'verifyPayment']);
+    Route::post('/loan-detail/{loanDetail}/upload-documents', [LoanDetailController::class, 'uploadDocuments'])->name('loan-document.upload');
     Route::delete('/loan-document/{loanDocument}', [LoanDetailController::class, 'destroyDocument'])->name('loan-document.destroy');
 });
 

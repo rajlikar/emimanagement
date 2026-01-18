@@ -263,25 +263,40 @@ class LoanDetailController extends Controller
             );
 
             if ($request->has('documents')) {
-                foreach ($request->all()['documents'] as $docData) {
-                    if (isset($docData['file']) && $docData['file'] instanceof UploadedFile) {
-                        $file = $docData['file'];
-                        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-                        $filePath = $file->storeAs('loan_documents', $fileName, 'public');
-
-                        LoanDocument::create([
-                            'loan_details_id' => $loanDetail->id,
-                            'document' => $docData['name'] ?? $file->getClientOriginalName(),
-                            'path' => $filePath,
-                        ]);
-                    }
-                }
+                // Documents are now handled via a separate route: uploadDocuments
             }
 
             return redirect()->back()->with('success', 'Loan details updated successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred while updating loan details.');
         }
+    }
+
+    public function uploadDocuments(Request $request, LoanDetail $loanDetail)
+    {
+        $request->validate([
+            'documents' => 'required|array',
+            'documents.*.name' => 'required|string',
+            'documents.*.file' => 'required|file',
+        ]);
+
+        if ($request->has('documents')) {
+            foreach ($request->all()['documents'] as $docData) {
+                if (isset($docData['file']) && $docData['file'] instanceof UploadedFile) {
+                    $file = $docData['file'];
+                    $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                    $filePath = $file->storeAs('loan_documents', $fileName, 'public');
+
+                    LoanDocument::create([
+                        'loan_details_id' => $loanDetail->id,
+                        'document' => $docData['name'] ?? $file->getClientOriginalName(),
+                        'path' => $filePath,
+                    ]);
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Documents uploaded successfully!');
     }
 
     /**
