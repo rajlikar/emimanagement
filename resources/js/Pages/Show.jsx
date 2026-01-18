@@ -306,9 +306,9 @@ export default function Show({ mustVerifyEmail, user, loanDetail, emiDetail, doc
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 gap-8">
                         {/* Full Details Table (Sidebar Style) */}
-                        <div className="lg:col-span-1 space-y-6">
+                        <div className="space-y-6">
                             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                                 <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
                                     <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
@@ -345,7 +345,7 @@ export default function Show({ mustVerifyEmail, user, loanDetail, emiDetail, doc
                         </div>
 
                         {/* Documents Section */}
-                        <div className="lg:col-span-2">
+                        <div>
                             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                                 <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                     <h3 className="font-bold text-gray-900 dark:text-white">Documents</h3>
@@ -368,7 +368,7 @@ export default function Show({ mustVerifyEmail, user, loanDetail, emiDetail, doc
                         </div>
 
                         {/* Payment Schedule Table */}
-                        <div className="lg:col-span-2">
+                        <div>
                             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                                 <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                                     <h3 className="font-bold text-gray-900 dark:text-white">Repayment Schedule</h3>

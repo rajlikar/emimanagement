@@ -271,7 +271,7 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail, documents
 
                         <button
                             type="button"
-                            onClick={() => foreCloseLoan(loanDetail.id, event)}
+                            onClick={(e) => foreCloseLoan(loanDetail.id, e)}
                             className="inline-flex items-center px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 text-sm font-bold uppercase tracking-wider transition-all hover:bg-red-100 dark:hover:bg-red-900/40 hover:-translate-y-0.5"
                         >
                             <FontAwesomeIcon icon={faBan} className="mr-2" />
@@ -287,10 +287,10 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail, documents
                     {/* Success/Error Message Anchor */}
                     <div id="successMessage" className="empty:hidden rounded-2xl p-4 text-center text-sm font-bold transition-all animate-in fade-in slide-in-from-top-4 duration-300"></div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 gap-8">
                         {/* Main Loan Edit Form */}
-                        <div className="lg:col-span-1">
-                            <div className="bg-white dark:bg-gray-800 shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden sticky top-8">
+                        <div>
+                            <div className="bg-white dark:bg-gray-800 shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                                 <div className="p-6 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
                                     <h3 className="font-bold text-gray-900 dark:text-white flex items-center">
                                         <FontAwesomeIcon icon={faEdit} className="mr-2 text-indigo-500" />
@@ -402,78 +402,58 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail, documents
                                             </div>
                                         )}
 
-                                        {/* Add New Documents - Matched with Create.jsx UI */}
-                                        <div className="md:col-span-2 space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                        {/* Add New Documents */}
+                                        <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                                             <div className="flex items-center justify-between">
-                                                <InputLabel value="Documents" className="text-xs font-bold uppercase tracking-wider text-gray-500" />
+                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm">Add New Documents</h4>
                                                 <button
                                                     type="button"
                                                     onClick={addDocument}
-                                                    className="inline-flex items-center px-3 py-1 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150"
+                                                    className="inline-flex items-center px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-indigo-100 transition-colors"
                                                 >
-                                                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                                                    Add Document
+                                                    <FontAwesomeIcon icon={faPlus} className="mr-1" />
+                                                    Add
                                                 </button>
                                             </div>
 
                                             {data.documents.map((doc, index) => (
-                                                <div key={index} className="flex flex-col sm:flex-row gap-4 items-start bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all hover:bg-gray-100 dark:hover:bg-gray-800/50">
-                                                    <div className="flex-1 w-full">
-                                                        <InputLabel htmlFor={`doc_name_${index}`} value="Document Name" className="mb-1" />
+                                                <div key={index} className="flex flex-col md:flex-row gap-4 items-end p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                                                    <div className="flex-1 space-y-1 w-full">
+                                                        <InputLabel htmlFor={`doc_name_${index}`} value="Name" className="text-xs" />
                                                         <TextInput
                                                             id={`doc_name_${index}`}
                                                             value={doc.name}
                                                             onChange={(e) => handleDocumentChange(index, "name", e.target.value)}
-                                                            type="text"
-                                                            className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:ring-indigo-500"
-                                                            placeholder="e.g. Aadhar Card"
+                                                            className="block w-full text-sm py-1.5"
+                                                            placeholder="e.g. Statement"
                                                             required
                                                         />
-                                                        <InputError message={errors[`documents.${index}.name`]} className="mt-1" />
                                                     </div>
-                                                    <div className="flex-1 w-full relative">
-                                                        <InputLabel htmlFor={`doc_file_${index}`} value="File" className="mb-1" />
-                                                        <div className="relative">
-                                                            <input
-                                                                id={`doc_file_${index}`}
-                                                                type="file"
-                                                                onChange={(e) => handleDocumentChange(index, "file", e.target.files[0])}
-                                                                className="block w-full text-sm text-gray-500
-                                                                    file:mr-4 file:py-2.5 file:px-4
-                                                                    file:rounded-l-xl file:border-0
-                                                                    file:text-xs file:font-semibold
-                                                                    file:bg-indigo-50 file:text-indigo-700
-                                                                    hover:file:bg-indigo-100
-                                                                    dark:file:bg-gray-700 dark:file:text-gray-300
-                                                                    border border-gray-200 dark:border-gray-700 rounded-xl
-                                                                    bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                                                                "
-                                                                required={!doc.file}
-                                                            />
-                                                        </div>
-                                                        <InputError message={errors[`documents.${index}.file`]} className="mt-1" />
+
+                                                    <div className="flex-1 space-y-1 w-full">
+                                                        <InputLabel htmlFor={`doc_file_${index}`} value="File" className="text-xs" />
+                                                        <input
+                                                            id={`doc_file_${index}`}
+                                                            type="file"
+                                                            onChange={(e) => handleDocumentChange(index, "file", e.target.files[0])}
+                                                            className="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg h-[38px] pt-1.5"
+                                                            required
+                                                        />
                                                     </div>
-                                                    <div className="flex-none">
-                                                        <InputLabel value="Remove" className="mb-1 invisible" />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeDocument(index)}
-                                                            className="size-[42px] inline-flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 rounded-xl transition-colors border border-transparent hover:border-red-600 shadow-sm"
-                                                            title="Remove Document"
-                                                        >
-                                                            <FontAwesomeIcon icon={faMinus} />
-                                                        </button>
-                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeDocument(index)}
+                                                        className="size-[42px] inline-flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 rounded-xl transition-colors border border-transparent hover:border-red-600 shadow-sm"
+                                                        title="Remove"
+                                                    >
+                                                        <FontAwesomeIcon icon={faMinus} />
+                                                    </button>
                                                 </div>
                                             ))}
-
                                             {data.documents.length === 0 && (
-                                                <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
-                                                    <p className="text-sm text-gray-500">No new documents added yet.</p>
-                                                    <button type="button" onClick={addDocument} className="mt-2 text-indigo-600 hover:text-indigo-500 text-sm font-medium">Add a document</button>
-                                                </div>
+                                                <p className="text-xs text-gray-400 text-center italic">No new documents added</p>
                                             )}
-                                            <InputError message={errors.documents} className="mt-1" />
                                         </div>
 
                                         <div className="pt-4 mt-6 border-t border-gray-100 dark:border-gray-700">
@@ -493,7 +473,7 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail, documents
                         </div>
 
                         {/* EMI Schedule Management */}
-                        <div className="lg:col-span-2">
+                        <div>
                             <div className="bg-white dark:bg-gray-800 shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700 overflow-hidden">
                                 <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50">
                                     <div>
@@ -550,7 +530,7 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail, documents
                                                             </span>
                                                         ) : (
                                                             <button
-                                                                onClick={() => handleEmiSkip(loanDetail.id, emi.id, event)}
+                                                                onClick={(e) => handleEmiSkip(loanDetail.id, emi.id, e)}
                                                                 type="button"
                                                                 className="inline-flex items-center px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-black uppercase tracking-wider border border-red-100 dark:border-red-800 transition-all hover:bg-red-100"
                                                             >
