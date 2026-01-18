@@ -14,11 +14,17 @@ import {
     faBan,
     faCheckCircle,
     faHistory,
-    faEdit
+    faEdit,
+    faPlus,
+    faMinus,
+    faTrash,
+    faFileAlt,
+    faDownload
 } from "@fortawesome/free-solid-svg-icons";
+import { router } from '@inertiajs/react';
 import { useState, useEffect } from "react";
 
-export default function Edit({ mustVerifyEmail, loanDetail, emiDetail }) {
+export default function Edit({ mustVerifyEmail, loanDetail, emiDetail, documents }) {
     const { data, setData, post, errors, reset } = useForm({
         provider: loanDetail.provider,
         amount: loanDetail.amount,
@@ -28,6 +34,7 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail }) {
         emi_amount: loanDetail.emi_amount,
         loan_type: loanDetail.loan_type,
         date: loanDetail.disbursed_date,
+        documents: [],
         _method: "PUT",
     });
 
@@ -52,6 +59,33 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail }) {
         setEmiDetail(updatedEmiDetail);
     };
 
+    const addDocument = () => {
+        setData("documents", [...data.documents, { name: "", file: null }]);
+    };
+
+    const removeDocument = (index) => {
+        const newDocs = [...data.documents];
+        newDocs.splice(index, 1);
+        setData("documents", newDocs);
+    };
+
+    const handleDocumentChange = (index, field, value) => {
+        const newDocs = [...data.documents];
+        newDocs[index][field] = value;
+        setData("documents", newDocs);
+    };
+
+    const handleDeleteDocument = (docId) => {
+        if (confirm('Are you sure you want to delete this document?')) {
+            router.delete(route('loan-document.destroy', docId), {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Start success message animation/logic if needed, though inertia preserves scroll
+                }
+            });
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         // Get the span element
@@ -64,6 +98,9 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail }) {
                     "Loan details updated successfully!";
                 loanUpdateSuccessMessage.className =
                     "text-green-600 font-semibold mt-2";
+
+                // Reset New Documents form
+                setData("documents", []);
 
                 // Remove the message after 5 seconds
                 setTimeout(() => {
@@ -330,6 +367,115 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail }) {
                                             <InputError message={errors.date} />
                                         </div>
 
+                                        {/* Existing Documents */}
+                                        {documents && documents.length > 0 && (
+                                            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                                <h4 className="font-bold text-gray-900 dark:text-white text-sm">Existing Documents</h4>
+                                                <div className="space-y-2">
+                                                    {documents.map((doc) => (
+                                                        <div key={doc.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                                                            <div className="flex items-center space-x-3 overflow-hidden">
+                                                                <FontAwesomeIcon icon={faFileAlt} className="text-gray-400" />
+                                                                <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">{doc.document}</span>
+                                                            </div>
+                                                            <div className="flex items-center space-x-2">
+                                                                <a
+                                                                    href={`/storage/${doc.path}`}
+                                                                    target="_blank"
+                                                                    className="p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                                                                    title="Download"
+                                                                >
+                                                                    <FontAwesomeIcon icon={faDownload} />
+                                                                </a>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleDeleteDocument(doc.id)}
+                                                                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                                    title="Delete"
+                                                                >
+                                                                    <FontAwesomeIcon icon={faTrash} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Add New Documents - Matched with Create.jsx UI */}
+                                        <div className="md:col-span-2 space-y-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                            <div className="flex items-center justify-between">
+                                                <InputLabel value="Documents" className="text-xs font-bold uppercase tracking-wider text-gray-500" />
+                                                <button
+                                                    type="button"
+                                                    onClick={addDocument}
+                                                    className="inline-flex items-center px-3 py-1 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150"
+                                                >
+                                                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                                                    Add Document
+                                                </button>
+                                            </div>
+
+                                            {data.documents.map((doc, index) => (
+                                                <div key={index} className="flex flex-col sm:flex-row gap-4 items-start bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                                    <div className="flex-1 w-full">
+                                                        <InputLabel htmlFor={`doc_name_${index}`} value="Document Name" className="mb-1" />
+                                                        <TextInput
+                                                            id={`doc_name_${index}`}
+                                                            value={doc.name}
+                                                            onChange={(e) => handleDocumentChange(index, "name", e.target.value)}
+                                                            type="text"
+                                                            className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:ring-indigo-500"
+                                                            placeholder="e.g. Aadhar Card"
+                                                            required
+                                                        />
+                                                        <InputError message={errors[`documents.${index}.name`]} className="mt-1" />
+                                                    </div>
+                                                    <div className="flex-1 w-full relative">
+                                                        <InputLabel htmlFor={`doc_file_${index}`} value="File" className="mb-1" />
+                                                        <div className="relative">
+                                                            <input
+                                                                id={`doc_file_${index}`}
+                                                                type="file"
+                                                                onChange={(e) => handleDocumentChange(index, "file", e.target.files[0])}
+                                                                className="block w-full text-sm text-gray-500
+                                                                    file:mr-4 file:py-2.5 file:px-4
+                                                                    file:rounded-l-xl file:border-0
+                                                                    file:text-xs file:font-semibold
+                                                                    file:bg-indigo-50 file:text-indigo-700
+                                                                    hover:file:bg-indigo-100
+                                                                    dark:file:bg-gray-700 dark:file:text-gray-300
+                                                                    border border-gray-200 dark:border-gray-700 rounded-xl
+                                                                    bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                                                                "
+                                                                required={!doc.file}
+                                                            />
+                                                        </div>
+                                                        <InputError message={errors[`documents.${index}.file`]} className="mt-1" />
+                                                    </div>
+                                                    <div className="flex-none">
+                                                        <InputLabel value="Remove" className="mb-1 invisible" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeDocument(index)}
+                                                            className="size-[42px] inline-flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 rounded-xl transition-colors border border-transparent hover:border-red-600 shadow-sm"
+                                                            title="Remove Document"
+                                                        >
+                                                            <FontAwesomeIcon icon={faMinus} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+
+                                            {data.documents.length === 0 && (
+                                                <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                                                    <p className="text-sm text-gray-500">No new documents added yet.</p>
+                                                    <button type="button" onClick={addDocument} className="mt-2 text-indigo-600 hover:text-indigo-500 text-sm font-medium">Add a document</button>
+                                                </div>
+                                            )}
+                                            <InputError message={errors.documents} className="mt-1" />
+                                        </div>
+
                                         <div className="pt-4 mt-6 border-t border-gray-100 dark:border-gray-700">
                                             <button
                                                 type="submit"
@@ -337,7 +483,7 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail }) {
                                                 className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-indigo-600 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 transition-all hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
                                             >
                                                 <FontAwesomeIcon icon={faSave} className="mr-2" />
-                                                Update Principal
+                                                Update Primary Details
                                             </button>
                                             <p id="loanUpdateSuccess" className="text-center text-xs mt-3 empty:hidden"></p>
                                         </div>

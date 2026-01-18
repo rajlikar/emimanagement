@@ -18,6 +18,11 @@ class LoanDetail extends Model
         return $this->hasMany(EmiDetail::class);
     }
 
+    public function documents()
+    {
+        return $this->hasMany(LoanDocument::class, 'loan_details_id');
+    }
+
     protected $fillable = [
         'provider',
         'amount',

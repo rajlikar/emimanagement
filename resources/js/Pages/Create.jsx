@@ -4,7 +4,7 @@ import InputError from "@/Components/InputError";
 import InputLabel from "@/Components/InputLabel";
 import TextInput from "@/Components/TextInput";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faSave, faCalendarAlt, faPercentage, faMoneyBillWave, faUniversity } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faSave, faCalendarAlt, faPercentage, faMoneyBillWave, faUniversity, faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
 
 export default function Create({ mustVerifyEmail, users }) {
@@ -17,6 +17,7 @@ export default function Create({ mustVerifyEmail, users }) {
         emi_amount: "",
         loan_type: "tenure",
         date: "",
+        documents: [],
     });
 
     const [loan_type, setLoanType] = useState("tenure");
@@ -33,9 +34,24 @@ export default function Create({ mustVerifyEmail, users }) {
         }));
     };
 
+    const addDocument = () => {
+        setData("documents", [...data.documents, { name: "", file: null }]);
+    };
+
+    const removeDocument = (index) => {
+        const newDocs = [...data.documents];
+        newDocs.splice(index, 1);
+        setData("documents", newDocs);
+    };
+
+    const handleDocumentChange = (index, field, value) => {
+        const newDocs = [...data.documents];
+        newDocs[index][field] = value;
+        setData("documents", newDocs);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        console.log(data);
         post(route("loan-detail.store"));
     }
     return (
@@ -65,7 +81,7 @@ export default function Create({ mustVerifyEmail, users }) {
                 <div className="mx-auto max-w-4xl sm:px-6 lg:px-8">
                     <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-2xl border border-gray-100 dark:border-gray-700">
                         <div className="p-8">
-                            <form onSubmit={handleSubmit} className="space-y-8">
+                            <form onSubmit={handleSubmit} className="space-y-8" encType="multipart/form-data">
                                 {/* Basic Info Section */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="md:col-span-2 border-b border-gray-100 dark:border-gray-700 pb-2">
@@ -223,6 +239,86 @@ export default function Create({ mustVerifyEmail, users }) {
                                                 <InputError message={errors.emi_amount} className="mt-1" />
                                             </div>
                                         )}
+                                    </div>
+
+                                    <div className="md:col-span-2 border-b border-gray-100 dark:border-gray-700 pb-2">
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center">
+                                            <FontAwesomeIcon icon={faUniversity} className="mr-2 text-indigo-500" />
+                                            Loan Documents
+                                        </h3>
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <InputLabel value="Documents" className="text-xs font-bold uppercase tracking-wider text-gray-500" />
+                                            <button
+                                                type="button"
+                                                onClick={addDocument}
+                                                className="inline-flex items-center px-3 py-1 bg-indigo-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150"
+                                            >
+                                                <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                                                Add Document
+                                            </button>
+                                        </div>
+
+                                        {data.documents.map((doc, index) => (
+                                            <div key={index} className="flex flex-col sm:flex-row gap-4 items-start bg-gray-50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700 transition-all hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                                <div className="flex-1 w-full">
+                                                    <InputLabel htmlFor={`doc_name_${index}`} value="Document Name" className="mb-1" />
+                                                    <TextInput
+                                                        id={`doc_name_${index}`}
+                                                        value={doc.name}
+                                                        onChange={(e) => handleDocumentChange(index, "name", e.target.value)}
+                                                        type="text"
+                                                        className="block w-full rounded-xl border-gray-200 dark:border-gray-700 dark:bg-gray-900 focus:ring-indigo-500"
+                                                        placeholder="e.g. Aadhar Card"
+                                                        required
+                                                    />
+                                                    <InputError message={errors[`documents.${index}.name`]} className="mt-1" />
+                                                </div>
+                                                <div className="flex-1 w-full relative">
+                                                    <InputLabel htmlFor={`doc_file_${index}`} value="File" className="mb-1" />
+                                                    <div className="relative">
+                                                        <input
+                                                            id={`doc_file_${index}`}
+                                                            type="file"
+                                                            onChange={(e) => handleDocumentChange(index, "file", e.target.files[0])}
+                                                            className="block w-full text-sm text-gray-500
+                                                                file:mr-4 file:py-2.5 file:px-4
+                                                                file:rounded-l-xl file:border-0
+                                                                file:text-xs file:font-semibold
+                                                                file:bg-indigo-50 file:text-indigo-700
+                                                                hover:file:bg-indigo-100
+                                                                dark:file:bg-gray-700 dark:file:text-gray-300
+                                                                border border-gray-200 dark:border-gray-700 dark:bg-gray-900 rounded-xl
+                                                                bg-white dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                                                            "
+                                                            required={!doc.file}
+                                                        />
+                                                    </div>
+                                                    <InputError message={errors[`documents.${index}.file`]} className="mt-1" />
+                                                </div>
+                                                <div className="flex-none">
+                                                    <InputLabel value="Remove" className="mb-1 invisible" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeDocument(index)}
+                                                        className="size-[42px] inline-flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 rounded-xl transition-colors border border-transparent hover:border-red-600 shadow-sm"
+                                                        title="Remove Document"
+                                                    >
+                                                        <FontAwesomeIcon icon={faMinus} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {data.documents.length === 0 && (
+                                            <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl">
+                                                <p className="text-sm text-gray-500">No documents added yet.</p>
+                                                <button type="button" onClick={addDocument} className="mt-2 text-indigo-600 hover:text-indigo-500 text-sm font-medium">Add a document</button>
+                                            </div>
+                                        )}
+                                        <InputError message={errors.documents} className="mt-1" />
                                     </div>
                                 </div>
 

@@ -29,6 +29,19 @@ class LoanDetailRequest extends FormRequest
             "tenure" => ['nullable', 'integer', 'required_without:emi_amount'],
             "emi_amount" => ['nullable', 'required_without:tenure'],
             "date" =>['required','date'],
+            "documents" => ['nullable', 'array'],
+            "documents.*.file" => ['required', 'file', 'mimes:pdf,doc,docx', 'max:2048'],
+            "documents.*.name" => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'documents.*.file.required' => 'Please upload the document.',
+            'documents.*.file.mimes' => 'Only PDF, DOC, and DOCX files are allowed.',
+            'documents.*.file.max' => 'Document size must be less than 2MB.',
+            'documents.*.name.required' => 'Document name is required.',
         ];
     }
 }

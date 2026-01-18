@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LoanDocument;
 use Carbon\Carbon;
 use App\Models\User;
 use Inertia\Inertia;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\LoanDetailRequest;
 use App\Http\Resources\LoanDetailResource;
+use Illuminate\Http\UploadedFile;
 
 class LoanDetailController extends Controller
 {
@@ -183,6 +185,39 @@ class LoanDetailController extends Controller
                 $emiCalculation['remaining_amount'],
                 $date
             );
+
+            // if ($request->has('documents')) {
+            //     foreach ($request->input('documents') as $docData) {
+            //         // Check if 'file' key exists and is valid
+            //         if (isset($docData['file']) && $docData['file'] instanceof \Illuminate\Http\UploadedFile) {
+            //             $file = $docData['file'];
+            //             $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+            //             $filePath = $file->storeAs('loan_documents', $fileName, 'public');
+
+            //             LoanDocument::create([
+            //                 'loan_details_id' => $loanDetail->id, // Matches migration: loan_details_id
+            //                 'document' => $docData['name'], // Matches migration: document
+            //                 'path' => $filePath, // Matches migration: path
+            //             ]);
+            //         }
+            //     }
+            // }
+
+            if ($request->has('documents')) {
+                foreach ($request->all()['documents'] as $docData) {
+                    if (isset($docData['file']) && $docData['file'] instanceof UploadedFile) {
+                        $file = $docData['file'];
+                        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                        $filePath = $file->storeAs('loan_documents', $fileName, 'public');
+
+                        LoanDocument::create([
+                            'loan_details_id' => $loanDetail->id,
+                            'document' => $docData['name'] ?? $file->getClientOriginalName(),
+                            'path' => $filePath,
+                        ]);
+                    }
+                }
+            }
         }
 
         return redirect()->route('loan-detail.index');
@@ -227,6 +262,22 @@ class LoanDetailController extends Controller
                 $date
             );
 
+            if ($request->has('documents')) {
+                foreach ($request->all()['documents'] as $docData) {
+                    if (isset($docData['file']) && $docData['file'] instanceof UploadedFile) {
+                        $file = $docData['file'];
+                        $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+                        $filePath = $file->storeAs('loan_documents', $fileName, 'public');
+
+                        LoanDocument::create([
+                            'loan_details_id' => $loanDetail->id,
+                            'document' => $docData['name'] ?? $file->getClientOriginalName(),
+                            'path' => $filePath,
+                        ]);
+                    }
+                }
+            }
+
             return redirect()->back()->with('success', 'Loan details updated successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred while updating loan details.');
@@ -240,7 +291,8 @@ class LoanDetailController extends Controller
     {
         $emiDetail = $loanDetail->emiDetail;
         $user = $loanDetail->user;
-        return inertia('Show', compact('user', 'loanDetail', 'emiDetail'));
+        $documents = $loanDetail->documents;
+        return inertia('Show', compact('user', 'loanDetail', 'emiDetail', 'documents'));
     }
 
     /**
@@ -249,7 +301,8 @@ class LoanDetailController extends Controller
     public function edit(LoanDetail $loanDetail)
     {
         $emiDetail = $loanDetail->emiDetail->select('id', 'loan_detail_id', 'amount', 'due_date', 'status');
-        return inertia('Edit', compact('loanDetail', 'emiDetail'));
+        $documents = $loanDetail->documents;
+        return inertia('Edit', compact('loanDetail', 'emiDetail', 'documents'));
     }
 
     /**
@@ -261,6 +314,11 @@ class LoanDetailController extends Controller
             $loanDetail->emiDetail()->delete();
             $loanDetail->delete();
         }
+
+        if (request()->wantsJson()) {
+            return response()->json(['status' => true, 'message' => 'Loan deleted successfully']);
+        }
+
         return redirect()->route('loan-detail.index');
     }
 
@@ -278,5 +336,17 @@ class LoanDetailController extends Controller
         }
 
         return response()->json(['status' => true, 'message' => 'Loan is foreclosed!']);
+    }
+
+    public function destroyDocument(LoanDocument $loanDocument)
+    {
+        // Delete file from storage
+        if ($loanDocument->path && \Illuminate\Support\Facades\Storage::disk('public')->exists($loanDocument->path)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($loanDocument->path);
+        }
+
+        $loanDocument->delete();
+
+        return redirect()->back()->with('success', 'Document deleted successfully!');
     }
 }

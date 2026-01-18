@@ -440,6 +440,12 @@ export default function Dashboard({ loanDetails }) {
         addCustomStyles();
 
         window.deleteLoan = async (loanId) => {
+            if (!loanId) {
+                console.error("deleteLoan called with invalid ID:", loanId);
+                Swal.fire('Error', 'Invalid Loan ID encountered.', 'error');
+                return;
+            }
+
             const result = await Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",

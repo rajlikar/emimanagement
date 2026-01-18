@@ -14,7 +14,8 @@ import {
     faInfoCircle,
     faCheckCircle,
     faExclamationCircle,
-    faUser
+    faUser,
+    faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 
 import DataTable from "datatables.net-react";
@@ -23,7 +24,7 @@ import React, { useRef, useEffect } from "react";
 
 DataTable.use(DT);
 
-export default function Show({ mustVerifyEmail, user, loanDetail, emiDetail }) {
+export default function Show({ mustVerifyEmail, user, loanDetail, emiDetail, documents }) {
     const tableRef = useRef();
     const [localEmiDetails, setLocalEmiDetails] = useState(emiDetail);
 
@@ -338,6 +339,29 @@ export default function Show({ mustVerifyEmail, user, loanDetail, emiDetail }) {
                                                 {localEmiDetails.filter(e => e.status === 'paid').length} / {loanDetail.emi_count}
                                             </span>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Documents Section */}
+                        <div className="lg:col-span-2">
+                            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                                <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                    <h3 className="font-bold text-gray-900 dark:text-white">Documents</h3>
+                                </div>
+                                <div className="p-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {documents.map((doc) => (
+                                            <div key={doc.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-bold text-gray-900 dark:text-white">{doc.document}</span>
+                                                    <a href={`/storage/${doc.path}`} target="_blank" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200">
+                                                        <FontAwesomeIcon icon={faDownload} />
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
