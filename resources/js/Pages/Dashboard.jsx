@@ -92,7 +92,7 @@ export default function Dashboard({ stats }) {
 
                     <Link
                         href={route("loan-detail.create")}
-                        className="inline-flex items-center px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all"
+                        className="inline-flex items-center px-5 py-2.5 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold shadow-lg hover:bg-indigo-500 dark:hover:bg-indigo-400 hover:shadow-xl hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-indigo-300 dark:focus:ring-offset-gray-900"
                     >
                         <FontAwesomeIcon icon={faPlus} className="mr-2" />
                         New Loan
