@@ -67,6 +67,23 @@
             margin-bottom: 30px;
         }
 
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary-table th,
+        .summary-table td {
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            text-align: left;
+        }
+
+        .summary-table tr:last-child th,
+        .summary-table tr:last-child td {
+            border-bottom: none;
+        }
+
         .summary-row {
             display: flex;
             justify-content: space-between;
@@ -148,22 +165,24 @@
             </div>
 
             <div class="summary-card">
-                <div class="summary-row">
-                    <span class="label">Provider</span>
-                    <span class="value">{{ $emi->loanDetail->provider }}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="label">Due Date</span>
-                    <span class="value">{{ \Carbon\Carbon::parse($emi->due_date)->format('M d, Y') }}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="label">Loan Amount</span>
-                    <span class="value">₹{{ number_format($emi->loanDetail->amount, 2) }}</span>
-                </div>
-                <div class="summary-row" style="border-top: 2px solid #e5e7eb; padding-top: 15px; margin-top: 5px;">
-                    <span class="label" style="font-size: 16px; color: #111827;">EMI Amount Due</span>
-                    <span class="amount-value">₹{{ number_format($emi->amount, 2) }}</span>
-                </div>
+                <table class="summary-table" role="presentation" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <th class="label">Provider:- </th>
+                        <td class="value">{{ $emi->loanDetail->provider }}</td>
+                    </tr>
+                    <tr>
+                        <th class="label">Due Date:- </th>
+                        <td class="value">{{ \Carbon\Carbon::parse($emi->due_date)->format('M d, Y') }}</td>
+                    </tr>
+                    <tr>
+                        <th class="label">Loan Amount:- </th>
+                        <td class="value">₹{{ number_format($emi->loanDetail->amount, 2) }}</td>
+                    </tr>
+                    <tr>
+                        <th class="label" style="font-size: 16px; color: #111827;">EMI Amount Due:- </th>
+                        <td class="amount-value">₹{{ number_format($emi->amount, 2) }}</td>
+                    </tr>
+                </table>
             </div>
 
             <div class="button-container">
