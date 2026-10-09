@@ -1,0 +1,35 @@
+# Litestream replication config. ${VAR} references are expanded by Litestream
+# itself from the container environment (set by Cloud Run / the entrypoint).
+#
+#   DB_DATABASE         absolute path of the live SQLite file (the same value
+#                       Laravel reads), e.g. /var/lib/emi-db/database.sqlite
+#   LITESTREAM_BUCKET   GCS bucket that holds the replica
+#   LITESTREAM_PATH     object prefix inside that bucket (default below)
+#
+# Auth is Application Default Credentials: on Cloud Run that is the service
+# account attached to the revision, which needs roles/storage.objectAdmin on the
+# bucket. No key file is ever baked into the image.
+#
+# Use a bucket DIFFERENT from the uploads bucket. The replica is a pile of
+# internal WAL segments; mounting or browsing it as "documents" is pointless, and
+# a lifecycle rule you add for one would apply to the other.
+
+dbs:
+  - path: ${DB_DATABASE}
+    replicas:
+      - type: gcs
+        bucket: ${LITESTREAM_BUCKET}
+        path: ${LITESTREAM_PATH}
+
+        # How often new WAL frames are pushed. 1s keeps the loss window after a
+        # hard crash to about a second of writes (a graceful stop flushes
+        # everything). Only changed data is uploaded, so an idle app makes no
+        # requests and costs nothing.
+        sync-interval: 1s
+
+        # A fresh full snapshot every 6h bounds how many WAL segments a restore
+        # has to replay, and therefore the cold-start time. Retention then
+        # deletes anything older than 24h that a snapshot has superseded, which
+        # keeps the bucket at a few MB.
+        snapshot-interval: 6h
+        retention: 24h

@@ -36,6 +36,12 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PROTO
         );
 
+        // Server-to-server call from Cloud Scheduler: there is no browser session
+        // and so no CSRF token. The route authenticates with REMINDER_TOKEN instead.
+        $middleware->validateCsrfTokens(except: [
+            'internal/send-emi-reminders',
+        ]);
+
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,

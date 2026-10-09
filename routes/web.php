@@ -11,6 +11,7 @@ use App\Http\Controllers\LoanDetailController;
 use App\Http\Controllers\Api\LoanDetailController as ApiLoanDetailController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\ContactFormController;
+use App\Http\Controllers\Internal\ReminderController;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
@@ -60,3 +61,9 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+
+// Called by Cloud Scheduler once a day. Authenticated by REMINDER_TOKEN, not by a
+// user session. nginx routes this exact path to a separate long-timeout php-fpm
+// pool (docker/nginx.conf) because the command sleeps between emails.
+Route::post('/internal/send-emi-reminders', ReminderController::class)
+    ->name('internal.send-emi-reminders');

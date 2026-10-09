@@ -12,7 +12,9 @@
 #   * listens on 0.0.0.0, not localhost
 #   * container exits non-zero if either nginx or php-fpm dies
 #   * writes all logs to stdout/stderr (Cloud Logging captures these)
-#   * filesystem is treated as ephemeral; nothing durable is written to it
+#   * filesystem is treated as ephemeral; the SQLite database lives on local
+#     disk and is continuously replicated to GCS by Litestream (see
+#     docs/cloud-run-sqlite-litestream.md); uploads live on a GCS volume mount
 # =============================================================================
 
 
@@ -88,6 +90,7 @@ FROM php:8.2-fpm-alpine AS runtime
 RUN apk add --no-cache \
         nginx \
         supervisor \
+        su-exec \
         bash \
         curl \
         icu-libs \
@@ -130,8 +133,17 @@ COPY docker/php.ini          /usr/local/etc/php/conf.d/zz-app.ini
 COPY docker/php-fpm.conf     /usr/local/etc/php-fpm.d/zz-app.conf
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/entrypoint.sh    /usr/local/bin/docker-entrypoint
+COPY docker/start-nginx.sh    /usr/local/bin/start-nginx
+COPY docker/litestream.yml   /etc/litestream.yml
 
-RUN chmod +x /usr/local/bin/docker-entrypoint
+# Litestream: continuous SQLite replication to GCS. Copied from the official
+# image rather than downloaded from the GitHub release because the release
+# tarballs are glibc-linked and will not run on Alpine (musl); this one is built
+# static. Pinned to 0.3.13 — 0.5.x changed the on-disk replica format, so a bump
+# is a migration, not a routine update.
+COPY --from=litestream/litestream:0.3.13 /usr/local/bin/litestream /usr/local/bin/litestream
+
+RUN chmod +x /usr/local/bin/docker-entrypoint /usr/local/bin/start-nginx
 
 # The application generates document URLs of the form /storage/<path>, which
 # nginx serves from public/storage. Laravel writes those files to
@@ -150,6 +162,7 @@ RUN mkdir -p storage/app/public \
              storage/framework/views \
              storage/logs \
              bootstrap/cache \
+             /var/lib/emi-db \
     && ln -sfn /var/www/html/storage/app/public /var/www/html/public/storage
 
 # Build the package manifest now instead of on every cold start. This is the
@@ -160,7 +173,11 @@ RUN php artisan package:discover --ansi
 # php-fpm workers run as www-data. Only the paths Laravel actually writes to are
 # made group-writable; the rest of the tree stays read-only to the web user,
 # which limits what a code-execution bug can overwrite.
-RUN chown -R www-data:www-data storage bootstrap/cache \
+#
+# /var/lib/emi-db holds the live SQLite file. SQLite needs the DIRECTORY to be
+# writable, not just the file, because it creates the -wal and -shm side files
+# next to it. Both php-fpm and Litestream run as www-data and must share it.
+RUN chown -R www-data:www-data storage bootstrap/cache /var/lib/emi-db \
     && chmod -R 775 storage bootstrap/cache
 
 # Documentation only — Cloud Run routes to whatever $PORT says.

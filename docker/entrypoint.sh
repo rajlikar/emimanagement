@@ -35,12 +35,55 @@ case "${APP_KEY}" in
     *) fatal "APP_KEY looks empty or malformed." ;;
 esac
 
-# Cloud Run instances have no persistent disk, so a SQLite file is discarded
-# every time an instance is recycled — which happens constantly at min-instances=0.
-case "${DB_CONNECTION:-}" in
-    ""|sqlite)
-        log "WARNING: DB_CONNECTION='${DB_CONNECTION:-unset}'. Cloud Run has no persistent"
-        log "WARNING: disk; SQLite data will be lost on every instance restart. Use MySQL."
+# -----------------------------------------------------------------------------
+# 2b. Database: SQLite on local disk, replicated to GCS by Litestream
+# -----------------------------------------------------------------------------
+# Cloud Run instances have no persistent disk, so a bare SQLite file would be
+# discarded every time an instance is recycled (constantly, at min-instances=0).
+# Litestream makes it durable: it restores the latest replica here at start and
+# streams every change back to GCS while running. See
+# docs/cloud-run-sqlite-litestream.md for the model and its limits.
+#
+# LITESTREAM_ENABLED is read by supervisord.conf (%(ENV_LITESTREAM_ENABLED)s), so
+# it MUST be exported in every branch, including the one that disables it.
+LITESTREAM_ENABLED=false
+export LITESTREAM_ENABLED
+
+case "${DB_CONNECTION:-sqlite}" in
+    sqlite)
+        case "${DB_DATABASE:-}" in
+            /*) : ;;
+            *) fatal "DB_CONNECTION=sqlite requires DB_DATABASE to be an absolute path (e.g. /var/lib/emi-db/database.sqlite); got '${DB_DATABASE:-unset}'." ;;
+        esac
+
+        DB_DIR="$(dirname "${DB_DATABASE}")"
+        mkdir -p "${DB_DIR}"
+        chown www-data:www-data "${DB_DIR}"
+
+        if [ -n "${LITESTREAM_BUCKET:-}" ]; then
+            LITESTREAM_PATH="${LITESTREAM_PATH:-emi/database}"
+            export LITESTREAM_PATH
+
+            # -if-db-not-exists: never overwrite a database that is already here.
+            # -if-replica-exists: a brand-new bucket has nothing to restore, which
+            #   is the normal first-deploy case and must not be an error.
+            # Any OTHER failure (permissions, network) is fatal on purpose, via
+            # `set -e`: carrying on would let the migration below create an empty
+            # database and Litestream start replicating THAT over the real history.
+            # Runs as www-data so the files it creates are writable by php-fpm.
+            log "restoring database from gs://${LITESTREAM_BUCKET}/${LITESTREAM_PATH} (if a replica exists)"
+            su-exec www-data litestream restore                 -config /etc/litestream.yml                 -if-db-not-exists -if-replica-exists                 "${DB_DATABASE}"
+
+            LITESTREAM_ENABLED=true
+        elif [ "${APP_ENV:-}" = "production" ]; then
+            fatal "APP_ENV=production with SQLite but LITESTREAM_BUCKET is unset: the database would be lost on every instance restart."
+        else
+            log "WARNING: LITESTREAM_BUCKET unset; SQLite at ${DB_DATABASE} is NOT replicated and"
+            log "WARNING: will be lost when this container stops. Fine for local testing only."
+        fi
+        ;;
+    *)
+        log "DB_CONNECTION=${DB_CONNECTION}: using an external database; Litestream is not used."
         ;;
 esac
 
@@ -95,22 +138,42 @@ php artisan view:cache
 php artisan route:cache || log "WARNING: route:cache failed; continuing with runtime route resolution."
 
 # -----------------------------------------------------------------------------
-# 5. Migrations — opt-in only
+# 5. Migrations
 # -----------------------------------------------------------------------------
-# Leave RUN_MIGRATIONS unset on Cloud Run. During a rollout several instances
-# boot at once and Laravel's migrator takes no distributed lock, so they race
-# each other on the `migrations` table and can half-apply a schema.
+# With SQLite there is exactly one instance holding the database (max-instances=1),
+# so the concurrent-migrator race that makes migrate-on-boot unsafe against a
+# shared MySQL cannot occur, and a separate Cloud Run Job could not reach the
+# file anyway: it lives on this instance's local disk.
 #
-# The safe pattern is a one-off Cloud Run Job run BEFORE switching traffic:
-#     gcloud run jobs execute emi-migrate --region="$REGION" --wait
+# Default: ON for SQLite, OFF for anything else (keep using a one-off Job there).
+# RUN_MIGRATIONS=true|false overrides either way.
 #
-# This switch exists for local docker-compose use, where there is exactly one
-# instance. The failure is not swallowed: booting against a half-migrated schema
-# produces confusing "table not found" errors on random requests instead of one
-# clear startup failure.
-if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
-    log "RUN_MIGRATIONS=true — applying database migrations"
-    php artisan migrate --force
+# Runs as www-data so the database and its -wal/-shm files are owned by the same
+# user php-fpm and Litestream run as. A root-owned file here would make every
+# later write fail with "attempt to write a readonly database". A failed
+# migration is not swallowed: set -e aborts the start, producing one clear
+# startup failure rather than "no such table" on random requests.
+if [ -z "${RUN_MIGRATIONS:-}" ]; then
+    if [ "${DB_CONNECTION:-sqlite}" = "sqlite" ]; then RUN_MIGRATIONS=true; else RUN_MIGRATIONS=false; fi
+fi
+if [ "${RUN_MIGRATIONS}" = "true" ]; then
+    log "applying database migrations"
+    su-exec www-data php artisan migrate --force
+fi
+
+# -----------------------------------------------------------------------------
+# 5b. One-off security cleanup (opt-in)
+# -----------------------------------------------------------------------------
+# Accounts created before the fix carry the retired hardcoded password
+# 'razorpod.in' (public in the repo). INVALIDATE_DEFAULT_PASSWORDS=true replaces
+# any such password with a random one. Idempotent, and it only touches users that
+# still match, so leaving it on costs one bcrypt check per user at cold start;
+# set it for one deploy and unset it afterwards. Runs after the migrations so the
+# users table is guaranteed to exist, and as www-data like everything else that
+# writes the database.
+if [ "${INVALIDATE_DEFAULT_PASSWORDS:-false}" = "true" ]; then
+    log "invalidating accounts that still use the retired default password"
+    su-exec www-data php artisan auth:invalidate-default-passwords
 fi
 
 log "startup complete; handing off to $*"

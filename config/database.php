@@ -37,9 +37,13 @@ return [
             'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
-            'busy_timeout' => null,
-            'journal_mode' => null,
-            'synchronous' => null,
+            // WAL is required by Litestream (production replication) and is also
+            // the better mode for a web app: readers do not block the writer.
+            // busy_timeout makes a write wait for Litestream's brief checkpoint
+            // lock instead of failing immediately with "database is locked".
+            'busy_timeout' => env('DB_BUSY_TIMEOUT', 5000),
+            'journal_mode' => env('DB_JOURNAL_MODE', 'WAL'),
+            'synchronous' => env('DB_SYNCHRONOUS', 'NORMAL'),
         ],
 
         'mysql' => [

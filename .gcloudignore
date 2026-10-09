@@ -22,6 +22,12 @@ auth.json
 *.key
 .rnd
 emimanagement.sql
+*.sql
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+backups
+scripts
 
 # --- rebuilt inside the image ------------------------------------------------
 node_modules

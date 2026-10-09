@@ -44,6 +44,12 @@ return [
     'cloudflare_turnstile' => [
         'site_key' => env('TURNSTILE_SITE_KEY'),
         'secret' => env('TURNSTILE_SECRET_KEY'),
-    ]
+    ],
+
+    // Shared secret for POST /internal/send-emi-reminders (called by Cloud
+    // Scheduler). Unset means the endpoint is disabled, not open.
+    'reminder' => [
+        'token' => env('REMINDER_TOKEN'),
+    ],
 
 ];

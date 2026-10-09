@@ -17,6 +17,12 @@ auth.json
 *.key
 .rnd
 emimanagement.sql
+# Docker's .dockerignore only matches '*.x' at the context root; **/ reaches
+# database/database.sqlite and any dump in a subfolder.
+**/*.sql
+**/*.sqlite*
+backups
+scripts
 
 # --- rebuilt inside the image ------------------------------------------------
 node_modules
