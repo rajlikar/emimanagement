@@ -9,6 +9,14 @@ class LoanDetail extends Model
 {
     use HasFactory;
 
+    protected static function booted(): void
+    {
+        // Delete documents through Eloquent, before the loan row, so each one's
+        // file is removed too. The database ON DELETE CASCADE would drop the rows
+        // but leave the files behind.
+        static::deleting(fn (LoanDetail $loan) => $loan->documents->each->delete());
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

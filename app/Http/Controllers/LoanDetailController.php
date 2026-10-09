@@ -211,6 +211,12 @@ class LoanDetailController extends Controller
                         $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
                         $filePath = $file->storeAs('loan_documents', $fileName, 'public');
 
+                        // storeAs() returns false on failure (the disk is throw=false).
+                        // Saving that as the path produced a row pointing at "/storage/0".
+                        if ($filePath === false) {
+                            throw new \RuntimeException("Could not store uploaded document {$fileName}");
+                        }
+
                         LoanDocument::create([
                             'loan_details_id' => $loanDetail->id,
                             'document' => $docData['name'] ?? $file->getClientOriginalName(),
@@ -292,6 +298,11 @@ class LoanDetailController extends Controller
                     $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
                     $filePath = $file->storeAs('loan_documents', $fileName, 'public');
 
+                    // See store(): a false return must not be saved as the path.
+                    if ($filePath === false) {
+                        throw new \RuntimeException("Could not store uploaded document {$fileName}");
+                    }
+
                     LoanDocument::create([
                         'loan_details_id' => $loanDetail->id,
                         'document' => $docData['name'] ?? $file->getClientOriginalName(),
@@ -370,11 +381,7 @@ class LoanDetailController extends Controller
     {
         Gate::authorize('delete', $loanDocument);
 
-        // Delete file from storage
-        if ($loanDocument->path && \Illuminate\Support\Facades\Storage::disk('public')->exists($loanDocument->path)) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($loanDocument->path);
-        }
-
+        // The model's deleted() hook removes the stored file as well.
         $loanDocument->delete();
 
         return redirect()->back()->with('success', 'Document deleted successfully!');

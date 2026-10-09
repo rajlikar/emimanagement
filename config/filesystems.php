@@ -41,7 +41,13 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
-            'visibility' => 'public',
+            // No 'visibility' here on purpose. With it set, Flysystem chmods every
+            // file right after writing it. On Cloud Run this directory is a GCS
+            // bucket mount (gcsfuse), which does not support chmod, so the write
+            // "failed" AFTER the bytes were stored: put() returned false and the
+            // app saved that false as the path "0" (links became /storage/0).
+            // Files are already world-readable via the mount's file-mode, and
+            // nginx serves them regardless of the Unix permission bits.
             'throw' => false,
         ],
 

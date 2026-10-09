@@ -39,6 +39,19 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    protected static function booted(): void
+    {
+        // Account deletion relies on database cascades for the loans and their
+        // documents, which never fire model events, so remove the document files
+        // explicitly first.
+        static::deleting(function (User $user) {
+            LoanDocument::whereIn(
+                'loan_details_id',
+                LoanDetail::where('user_id', $user->id)->select('id')
+            )->get()->each->delete();
+        });
+    }
+
     protected function casts(): array
     {
         return [
