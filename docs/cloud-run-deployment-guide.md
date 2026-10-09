@@ -1,5 +1,10 @@
 # EMIManagement — Google Cloud Run Deployment Guide
 
+> **Database update:** the container now supports SQLite + Litestream instead of Cloud SQL
+> (~$0.10–0.50/month instead of ~$10). For the database, migrations and reminder
+> parts, follow [cloud-run-sqlite-litestream.md](cloud-run-sqlite-litestream.md); the
+> Cloud SQL steps below (§5.3, §7.1, §7.2) are the alternative path.
+
 Written against the repository as of commit `c2d4097`, analysed and verified on
 2026-08-02. Every command below is written for a **brand-new Google Cloud
 account** with nothing configured, and is designed so it cannot touch your
