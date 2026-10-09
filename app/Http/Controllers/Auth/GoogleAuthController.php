@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 use Exception;
 use App\Models\User;
@@ -43,7 +44,11 @@ class GoogleAuthController extends Controller
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'password' => bcrypt('razorpod.in'),
+                    // Google-only accounts never use this password, so it must not
+                    // be guessable. It used to be the constant 'razorpod.in', which
+                    // let anyone who knew a Google user's email sign in with it. The
+                    // User model's 'hashed' cast hashes the random value on save.
+                    'password' => Str::random(64),
                 ]);
             }
             Auth::login($user);
