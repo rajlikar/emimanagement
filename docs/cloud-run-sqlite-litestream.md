@@ -262,6 +262,67 @@ a working login for anyone who knows the account's email.
 - Note the data is split by user: `…7@gmail.com` owns 1 loan and `…1996@gmail.com`
   owns 7. The app only shows a user their own loans.
 
+## 9d. Custom domain and later production configuration (2026-10-09/10)
+
+### Custom domain `akktechnology.org` (Cloud Run domain mapping)
+
+Domain mapping is a **beta** feature with more latency than a load balancer; it is
+fine for this app. Steps that worked:
+
+1. Create the mapping in the Cloud Run console for service `emimanagement`
+   (`asia-southeast1`) and verify domain ownership. Google adds a
+   `google-site-verification=…` TXT record at the root — **keep it**; the mapping
+   depends on it.
+2. For a **root** domain Cloud Run lists A and AAAA records (not a CNAME): four of
+   each, Google's front-end addresses `216.239.32/34/36/38.21` and
+   `2001:4860:4802:32/34/36/38::15`. Add all of them in Cloudflare with
+   **Name `@`** and proxy status **DNS only** (grey cloud) — the orange proxy blocks
+   certificate issuance. Delete any old A/AAAA at the same name first. For a
+   subdomain the Name is just the label (e.g. `emi`) and the record is a CNAME.
+3. Wait for the certificate ("Waiting for DNS" → "Certificate provisioning" → done).
+   Verified by querying Cloudflare's authoritative nameservers and then
+   `https://akktechnology.org/login` (TLS handshake failed until issued; HTTP
+   returned a Google 404 from `ghs` in the meantime).
+4. Set the app URLs to the domain — **flush replication first** (see §9c), then one
+   new revision:
+
+   ```bash
+   gcloud run services update emimanagement --region=asia-southeast1 \
+     --update-env-vars=APP_URL=https://akktechnology.org,GOOGLE_REDIRECT_URL=https://akktechnology.org/auth/google/callback \
+     --account=karnwalakshay7@gmail.com --project=karnwalak-511113
+   ```
+
+5. Add `https://akktechnology.org/auth/google/callback` to the Google OAuth client's
+   authorized redirect URIs (keep the `…run.app` one). Optionally add the hostname
+   in Cloudflare Turnstile (login works without it: nothing validates the widget).
+
+Notes: the old `…run.app` URL still serves the app but its Google sign-in now
+redirects to the domain; sessions are host-bound, so users sign in again. Rollback =
+set the two env vars back to the `run.app` URL and delete the mapping.
+
+### Other changes made after the first deploy (live in Cloud Run, not in git)
+
+- **Mail:** the original Mailgun SMTP credential (`emimanagement@akktechnology.org`)
+  was rejected with `535`, and the domain was not in the Mailgun account, so mail
+  now goes through **Gmail SMTP** (`smtp.gmail.com:587`, `tls`, sender
+  `karnwalakshay7@gmail.com`) using an app password stored as version 2 of
+  `emi-mail-password` (version 1 disabled). Gmail limits: ~500 recipients/day, the
+  From address is always the account, and changing the Google password revokes the
+  app password. Verified with a real "Forgot password" email.
+- **Payments:** `RAZORPAY_KEY_ID` (a `rzp_test_…` test key) is set; the matching test
+  secret is `emi-razorpay-secret`. A real checkout has not been tested.
+- **Secrets:** six `emi-*` secrets, one active version each (Secret Manager's free
+  limit); the unused `emi-mailersend-key` was deleted.
+- **Reminders:** Cloud Scheduler job `emi-reminder` (`0 10 * * *`, Asia/Kolkata, no
+  retries) is enabled. The first automatic run (2026-10-10 04:30 UTC) returned 200 in
+  0.6 s; no EMIs were pending, so no email was sent.
+- **Revision history:** 00001 first deploy → 00002 default-password cleanup →
+  00003 restore drill → 00004 nginx/upload fix → 00005 delete-files fix → 00006 Gmail
+  → 00007 Razorpay key id → 00008 custom domain URLs.
+- **Bugs found only on the real deployment and fixed:** uploads saved as path `0`
+  (gcsfuse rejects chmod), first request after idle returned 502 (nginx ready
+  before php-fpm), and document files were never deleted with their rows.
+
 ## 10. Files changed
 
 | File | Change |
