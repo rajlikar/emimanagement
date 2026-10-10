@@ -310,9 +310,18 @@ set the two env vars back to the `run.app` URL and delete the mapping.
   From address is always the account, and changing the Google password revokes the
   app password. Verified with a real "Forgot password" email.
 - **Payments:** `RAZORPAY_KEY_ID` (a `rzp_test_…` test key) is set; the matching test
-  secret is `emi-razorpay-secret`. A real checkout has not been tested.
+  secret is `emi-razorpay-secret`. A test-mode checkout was run on the live domain and
+  works. Moving to live payments means replacing both the key id (env var) and the
+  secret (new version of `emi-razorpay-secret`) with the live pair, together.
 - **Secrets:** six `emi-*` secrets, one active version each (Secret Manager's free
   limit); the unused `emi-mailersend-key` was deleted.
+- **Budget alert:** a monthly budget of **₹450 (~$5)** scoped to this project only, with
+  alerts at 50 % / 90 % / 100 % of actual spend and 100 % of forecasted spend. The
+  billing account (`Akk-Tech`) bills in INR, so the dollar figure is approximate. It is
+  an email warning, not a cutoff: nothing stops if the limit is passed. Recipients are
+  the billing account's default admins/users. It needed
+  `billingbudgets.googleapis.com` enabled on the project (free). Manage it under
+  Billing → Budgets & alerts, or `gcloud billing budgets list --billing-account=<id>`.
 - **Reminders:** Cloud Scheduler job `emi-reminder` (`0 10 * * *`, Asia/Kolkata, no
   retries) is enabled. The first automatic run (2026-10-10 04:30 UTC) returned 200 in
   0.6 s; no EMIs were pending, so no email was sent.
