@@ -36,47 +36,6 @@ export default function Dashboard({ loanDetails }) {
         };
     }, [loanDetails]);
 
-    const handlePayment = async () => {
-        const amount = 5000; // replace with dynamic amount
-
-        // 1. Create order on backend
-        const res = await axios.post("/create-order", { amount });
-
-        const { order_id, razorpay_key, currency } = res.data;
-
-        // 2. Open Razorpay Checkout
-        const options = {
-            key: "rzp_test_2FVsQnHLJifMbi",
-            amount: amount * 100,
-            currency: currency,
-            name: "Akk Technology",
-            description: "Subscription charge for EMI Management!",
-            order_id: order_id,
-            handler: function (response) {
-                console.log(response);
-                axios.post("/verify-payment", {
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_signature: response.razorpay_signature
-                });
-            },
-            prefill: {
-                name: "Akshay Kumar Karnwal",
-                email: "karnwalakshay7@gmail.com",
-                contact: "9568936879",
-            },
-            notes: {
-                loan_id: "123456",
-            },
-            theme: {
-                color: "#3399cc",
-            },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-    };
-
     // DataTable configuration with AJAX
     const dataTableOptions = {
         selectAllRowsItem: true,
@@ -511,12 +470,6 @@ export default function Dashboard({ loanDetails }) {
             }
         };
 
-        // Load Razorpay script
-        const script = document.createElement("script");
-        script.src = "https://checkout.razorpay.com/v1/checkout.js";
-        script.async = true;
-        document.body.appendChild(script);
-
         // Cleanup
         return () => {
             delete window.deleteLoan;
@@ -535,13 +488,6 @@ export default function Dashboard({ loanDetails }) {
                     </div>
 
                     <div className="flex items-center space-x-3 w-full sm:w-auto">
-                        <button
-                            onClick={handlePayment}
-                            className="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2.5 rounded-xl border border-transparent bg-indigo-600 text-sm font-bold uppercase tracking-widest text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 transition-all duration-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                            <span className="mr-2">⚡</span> Pay Now
-                        </button>
-
                         <Link
                             href={route("loan-detail.create")}
                             className="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-bold uppercase tracking-widest text-gray-700 dark:text-gray-200 shadow-sm transition-all duration-200 hover:bg-gray-50 dark:hover:bg-gray-700 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-300"

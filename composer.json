@@ -13,7 +13,6 @@
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^2.9",
         "mailersend/laravel-driver": "^2.12",
-        "razorpay/razorpay": "^2.9",
         "tightenco/ziggy": "^2.0",
         "zircote/swagger-php": "^5.3"
     },
