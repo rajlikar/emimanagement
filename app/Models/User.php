@@ -39,6 +39,16 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    /**
+     * Whether this email may create an account. See config('auth.allowed_emails').
+     */
+    public static function isEmailAllowed(string $email): bool
+    {
+        $allowed = config('auth.allowed_emails', []);
+
+        return $allowed === [] || in_array(strtolower(trim($email)), $allowed, true);
+    }
+
     protected static function booted(): void
     {
         // Account deletion relies on database cascades for the loans and their

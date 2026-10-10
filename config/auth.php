@@ -112,4 +112,21 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Allowed account emails
+    |--------------------------------------------------------------------------
+    |
+    | Comma-separated list in ALLOWED_EMAILS. When it is not empty, only these
+    | addresses can create an account (registration form or first Google
+    | sign-in). Existing accounts are not affected. Empty = sign-up is open,
+    | which is the default for local development and tests.
+    |
+    */
+
+    'allowed_emails' => array_values(array_filter(array_map(
+        fn ($email) => strtolower(trim($email)),
+        explode(',', (string) env('ALLOWED_EMAILS', ''))
+    ))),
+
 ];

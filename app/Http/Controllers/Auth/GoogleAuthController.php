@@ -39,6 +39,11 @@ class GoogleAuthController extends Controller
                     'name' => $googleUser->getName(),
                 ]);
             } else {
+                // Only an allowed address may create an account here.
+                if (! User::isEmailAllowed($googleUser->getEmail())) {
+                    return redirect()->route('login')->with('error', 'Sign-ups are closed. This is a private tool.');
+                }
+
                 // Create new user
                 $user = User::create([
                     'name' => $googleUser->getName(),

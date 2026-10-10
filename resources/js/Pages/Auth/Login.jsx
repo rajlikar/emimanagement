@@ -6,6 +6,7 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import IfSignupsOpen from '@/Components/IfSignupsOpen';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignInAlt } from "@fortawesome/free-solid-svg-icons";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
@@ -149,17 +150,19 @@ export default function Login({ status, canResetPassword }) {
                     </PrimaryButton>
                 </div>
 
-                <div className="text-center mt-8">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Don't have an account?{' '}
-                        <Link
-                            href={route('register')}
-                            className="font-black text-indigo-600 dark:text-indigo-400 hover:underline"
-                        >
-                            Create Account
-                        </Link>
-                    </p>
-                </div>
+                <IfSignupsOpen>
+                    <div className="text-center mt-8">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Don't have an account?{' '}
+                            <Link
+                                href={route('register')}
+                                className="font-black text-indigo-600 dark:text-indigo-400 hover:underline"
+                            >
+                                Create Account
+                            </Link>
+                        </p>
+                    </div>
+                </IfSignupsOpen>
                 <div className="relative py-4">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>

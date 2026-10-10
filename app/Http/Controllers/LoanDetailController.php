@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Gate;
 use App\Http\Requests\LoanDetailRequest;
 use App\Http\Resources\LoanDetailResource;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class LoanDetailController extends Controller
 {
@@ -375,6 +376,32 @@ class LoanDetailController extends Controller
         }
 
         return response()->json(['status' => true, 'message' => 'Loan is foreclosed!']);
+    }
+
+    /**
+     * Stream a document to its owner.
+     *
+     * Documents used to be served straight from /storage/<path> by nginx, so
+     * anyone holding the URL could fetch the file without signing in. They now
+     * go through here: login required, and only the owner of the loan may read it.
+     */
+    public function downloadDocument(LoanDocument $loanDocument)
+    {
+        Gate::authorize('view', $loanDocument);
+
+        $path = $loanDocument->path;
+        // '0' is what a failed write used to be saved as; it is not a real path.
+        abort_if($path === null || $path === '' || $path === '0', 404);
+        abort_unless(Storage::disk('public')->exists($path), 404);
+
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $name = Str::slug($loanDocument->document ?: 'document') . ($extension ? '.' . $extension : '');
+
+        return Storage::disk('public')->response($path, $name, [
+            // Private to the signed-in owner: never cache in a shared cache.
+            'Cache-Control' => 'private, no-store',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     public function destroyDocument(LoanDocument $loanDocument)

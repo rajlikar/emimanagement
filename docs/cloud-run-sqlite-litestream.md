@@ -309,12 +309,14 @@ set the two env vars back to the `run.app` URL and delete the mapping.
   `emi-mail-password` (version 1 disabled). Gmail limits: ~500 recipients/day, the
   From address is always the account, and changing the Google password revokes the
   app password. Verified with a real "Forgot password" email.
-- **Payments:** `RAZORPAY_KEY_ID` (a `rzp_test_…` test key) is set; the matching test
-  secret is `emi-razorpay-secret`. A test-mode checkout was run on the live domain and
-  works. Moving to live payments means replacing both the key id (env var) and the
-  secret (new version of `emi-razorpay-secret`) with the live pair, together.
-- **Secrets:** six `emi-*` secrets, one active version each (Secret Manager's free
-  limit); the unused `emi-mailersend-key` was deleted.
+- **Payments: removed entirely (2026-10-10).** The app had a hardcoded "Pay Now" button
+  (fixed ₹5000, with the owner's name, email and phone number embedded in the shipped
+  JavaScript). Collecting loan repayments through a personal Razorpay account would make
+  the owner a payment intermediary, which needs RBI authorisation, so the controller,
+  routes, button, checkout script and the `razorpay/razorpay` Composer dependency are
+  gone, as are the `RAZORPAY_KEY_ID` env var and the `emi-razorpay-secret` secret.
+- **Secrets:** `emi-mailersend-key` and `emi-razorpay-secret` were deleted; five `emi-*`
+  secrets remain, one active version each (inside Secret Manager's free limit of 6).
 - **Budget alert:** a monthly budget of **₹450 (~$5)** scoped to this project only, with
   alerts at 50 % / 90 % / 100 % of actual spend and 100 % of forecasted spend. The
   billing account (`Akk-Tech`) bills in INR, so the dollar figure is approximate. It is
@@ -331,6 +333,41 @@ set the two env vars back to the `run.app` URL and delete the mapping.
 - **Bugs found only on the real deployment and fixed:** uploads saved as path `0`
   (gcsfuse rejects chmod), first request after idle returned 502 (nginx ready
   before php-fpm), and document files were never deleted with their rows.
+
+## 9e. Private-tool hardening (access, documents, public pages)
+
+Reviewing the app against legal/regulatory questions turned up real gaps for a tool
+that is meant for personal use. Fixed:
+
+- **Sign-up is restricted.** `ALLOWED_EMAILS` (comma-separated) limits who can create
+  an account, both on the registration form and on first Google sign-in. Existing
+  accounts are unaffected; an empty list means open (local dev/tests). The
+  register/"Get Started" links are hidden while a list is set (`signupsOpen` shared
+  prop). Set it on Cloud Run: `--update-env-vars=ALLOWED_EMAILS=a@x.com,b@x.com`
+  (use `--update-env-vars` with the list quoted, or an env file, because it contains
+  commas).
+- **Documents are no longer public.** nginx used to serve `/storage/<path>` to anyone
+  with the URL (an anonymous request returned the PDF). `/storage/` now returns 404
+  and documents are streamed by `GET /loan-document/{id}/download`: login required,
+  owner only (`LoanDocumentPolicy::view`), `Cache-Control: private, no-store`.
+- **Contact form:** it mailed a hardcoded placeholder (`recipient@email.com`) and was
+  public and unthrottled. It now notifies `CONTACT_EMAIL` only (nothing is sent when
+  unset) and is rate-limited to 3/minute.
+- **Public pages made honest:** removed the fake US phone/address, `@emipro.com`
+  addresses, the non-existent mobile app and PayPal/Google Pay/Apple Pay answers,
+  "10,000+ users", "free trial", unverified security claims and stock avatars. Added an
+  "About this service" disclaimer (informational only, not advice, not a lender, check
+  your lender's statement), a truthful data-security list, and a "where your data is
+  kept and for how long" section (backups ~24 h, storage trash ~7 days). The single
+  public contact address comes from `CONTACT_EMAIL`.
+- Razorpay was removed entirely (see §9d), for the reason below: collecting loan
+  repayments through your own gateway account would make you a payment intermediary,
+  which needs RBI authorisation.
+- Cloud Run settings for this: `ALLOWED_EMAILS` (the two owner addresses) and
+  `CONTACT_EMAIL`. Because `ALLOWED_EMAILS` contains a comma, set it with gcloud's
+  alternate-delimiter form, e.g. `--update-env-vars "^@^ALLOWED_EMAILS=a@x.com,b@x.com@CONTACT_EMAIL=a@x.com"`.
+
+Not legal advice. Tests: `tests/Feature/PrivateAccessTest.php`.
 
 ## 10. Files changed
 

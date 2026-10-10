@@ -95,84 +95,24 @@ export default function Support({ auth }) {
               How Can We <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Help?</span>
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Our dedicated support team is here to assist you with any questions or issues you may have.
+              This is a private, personal tool. Questions can be sent through the form below or by email.
             </p>
           </div>
 
-          {/* Contact Methods Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <div className="p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 text-center">
+          {/* Contact */}
+          <div className="max-w-md mx-auto mb-16">
+            <div className="p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm text-center">
               <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-400 text-2xl mb-4 mx-auto">
                 <FontAwesomeIcon icon={faEnvelope} />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Email Support</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Get help via email
-              </p>
-              <a href="mailto:support@emipro.com" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
-                support@emipro.com
-              </a>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 text-center">
-              <div className="w-14 h-14 bg-green-50 dark:bg-green-900/30 rounded-2xl flex items-center justify-center text-green-600 dark:text-green-400 text-2xl mb-4 mx-auto">
-                <FontAwesomeIcon icon={faPhone} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Phone Support</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Talk to our team
-              </p>
-              <a href="tel:+15551234567" className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
-                +1 (555) 123-4567
-              </a>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 text-center">
-              <div className="w-14 h-14 bg-purple-50 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center text-purple-600 dark:text-purple-400 text-2xl mb-4 mx-auto">
-                <FontAwesomeIcon icon={faComments} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Live Chat</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Chat with us now
-              </p>
-              <button className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
-                Start Chat
-              </button>
-            </div>
-
-            <div className="p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-xl transition-all duration-300 text-center">
-              <div className="w-14 h-14 bg-orange-50 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center text-orange-600 dark:text-orange-400 text-2xl mb-4 mx-auto">
-                <FontAwesomeIcon icon={faMapMarkerAlt} />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Visit Us</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                Come say hello
-              </p>
-              <p className="text-indigo-600 dark:text-indigo-400 font-semibold text-sm">
-                123 Finance Street, NY
-              </p>
-            </div>
-          </div>
-
-          {/* Support Hours */}
-          <div className="mb-16">
-            <div className="p-8 rounded-3xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800">
-              <div className="flex items-center justify-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white">
-                  <FontAwesomeIcon icon={faClock} className="text-xl" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Support Hours</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                <div className="text-center">
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">Monday - Friday</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">9:00 AM - 8:00 PM EST</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-gray-600 dark:text-gray-400 mb-2">Saturday - Sunday</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">10:00 AM - 6:00 PM EST</p>
-                </div>
-              </div>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Email</h3>
+              {contactEmail ? (
+                <a href={`mailto:${contactEmail}`} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">
+                  {contactEmail}
+                </a>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">Please contact the site owner directly.</p>
+              )}
             </div>
           </div>
 
@@ -208,7 +148,7 @@ export default function Support({ auth }) {
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Can I track multiple loans?</h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Yes! EMIPro allows you to track unlimited loans across different categories including home loans, car loans, personal loans, and more. Each loan is managed separately with its own payment schedule.
+                      Yes. You can track as many loans as you like. Each loan is managed separately with its own payment schedule.
                     </p>
                   </div>
                 </div>
@@ -222,7 +162,7 @@ export default function Support({ auth }) {
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">How secure is my financial data?</h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      We use bank-level 256-bit SSL encryption to protect all your data. Your information is stored securely and never shared with third parties without your explicit consent. We also perform regular security audits.
+                      Traffic is encrypted over HTTPS, and data is stored on Google Cloud, which encrypts stored data at rest. Each account can only see its own loans and documents, and sign-in is limited to approved accounts.
                     </p>
                   </div>
                 </div>
@@ -234,9 +174,9 @@ export default function Support({ auth }) {
                     <FontAwesomeIcon icon={faQuestionCircle} className="text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Do you offer a mobile app?</h3>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Is there a mobile app?</h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      Yes! Our mobile app is available for both iOS and Android devices. You can download it from the App Store or Google Play Store. All features available on the web platform are also available on mobile.
+                      No. EMIPro is a web app and works in your phone's browser.
                     </p>
                   </div>
                 </div>
@@ -248,9 +188,9 @@ export default function Support({ auth }) {
                     <FontAwesomeIcon icon={faQuestionCircle} className="text-indigo-600 dark:text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">What payment methods do you accept?</h3>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Can I pay my EMI through this app?</h3>
                     <p className="text-gray-600 dark:text-gray-400">
-                      We accept all major credit cards, debit cards, and digital payment methods including PayPal, Google Pay, and Apple Pay. All transactions are processed securely through our payment partners.
+                      No. This app only tracks your loans; pay your lender through its own channels.
                     </p>
                   </div>
                 </div>
@@ -262,7 +202,7 @@ export default function Support({ auth }) {
           <div className="max-w-2xl mx-auto">
             <div className="p-8 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-lg">
               <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 text-center">Still Need Help?</h2>
-              <p className="text-gray-600 dark:text-gray-400 text-center mb-8">Send us a message and we'll get back to you within 24 hours</p>
+              <p className="text-gray-600 dark:text-gray-400 text-center mb-8">Send a message. It is recorded for the site owner; a reply is not guaranteed.</p>
 
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div>

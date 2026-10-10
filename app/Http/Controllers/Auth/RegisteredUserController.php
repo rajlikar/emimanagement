@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -35,6 +36,12 @@ class RegisteredUserController extends Controller
             'email' => 'required|string|lowercase|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        if (! User::isEmailAllowed($request->email)) {
+            throw ValidationException::withMessages([
+                'email' => 'Sign-ups are closed. This is a private tool.',
+            ]);
+        }
 
         $user = User::create([
             'name' => $request->name,

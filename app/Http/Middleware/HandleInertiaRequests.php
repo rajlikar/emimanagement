@@ -31,6 +31,9 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'contactEmail' => config('app.contact_email'),
+            // False when ALLOWED_EMAILS restricts who may create an account.
+            'signupsOpen' => config('auth.allowed_emails') === [],
             'auth' => [
                 'user' => $request->user(),
             ],

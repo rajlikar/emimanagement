@@ -445,7 +445,7 @@ export default function Edit({ mustVerifyEmail, loanDetail, emiDetail, documents
                                                         </div>
                                                         <div className="flex items-center space-x-1">
                                                             <a
-                                                                href={`/storage/${doc.path}`}
+                                                                href={`/loan-document/${doc.id}/download`}
                                                                 target="_blank"
                                                                 className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                                                                 title="Download"

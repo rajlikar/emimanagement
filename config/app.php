@@ -123,4 +123,16 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Contact email
+    |--------------------------------------------------------------------------
+    |
+    | The one real address shown on the public pages and notified when the
+    | contact form is used. Unset = no address is shown and no mail is sent.
+    |
+    */
+
+    'contact_email' => env('CONTACT_EMAIL'),
+
 ];

@@ -1,9 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWallet, faArrowLeft, faFileContract, faCheckCircle, faExclamationTriangle } from "@fortawesome/free-solid-svg-icons";
 import Logo from '@/Components/Logo';
 
 export default function Terms({ auth }) {
+  const { contactEmail } = usePage().props;
   return (
     <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A] selection:bg-indigo-500 selection:text-white">
       <Head title="Terms of Service - EMIPro" />
@@ -50,6 +51,21 @@ export default function Terms({ auth }) {
 
           {/* Content Sections */}
           <div className="space-y-8">
+            <section className="p-8 rounded-3xl bg-white dark:bg-gray-800 border border-indigo-100 dark:border-indigo-800 shadow-sm">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">About this service</h2>
+              <div className="text-gray-600 dark:text-gray-400 space-y-4">
+                <p>
+                  EMIPro is a private, personal record-keeping tool. Accounts are limited to approved users.
+                </p>
+                <p className="font-semibold text-gray-900 dark:text-white">
+                  It is for information only. It is not a bank or a lender, it does not give financial, investment, credit or debt advice, and it does not make payments to your lender.
+                </p>
+                <p>
+                  Schedules, interest and balances shown are estimates based on the figures you enter and a simplified calculation. Lenders may use different day-count, rounding and charge rules, so the numbers here can differ from yours. Always check amounts, due dates and closure or foreclosure figures against your lender's official statement.
+                </p>
+              </div>
+            </section>
+
             <section className="p-8 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
@@ -126,7 +142,9 @@ export default function Terms({ auth }) {
                   EMIPro is a tool to help you manage your loan payments. We are not:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
-                  <li>A financial advisor or lending institution</li>
+                  <li>A bank or lending institution</li>
+                  <li>A provider of financial, investment, credit or debt advice</li>
+                  <li>An official source of loan balances or closure amounts</li>
                   <li>Responsible for making actual payments on your behalf</li>
                   <li>Liable for any missed payments or late fees incurred</li>
                   <li>Responsible for the accuracy of third-party data</li>
@@ -167,9 +185,11 @@ export default function Terms({ auth }) {
                 If you have any questions about these Terms of Service, please contact us at:
               </p>
               <div className="space-y-2 text-gray-900 dark:text-white font-semibold">
-                <p>Email: legal@emipro.com</p>
-                <p>Phone: +1 (555) 123-4567</p>
-                <p>Address: 123 Finance Street, Suite 100, New York, NY 10001</p>
+                {contactEmail ? (
+                  <p>Email: <a href={`mailto:${contactEmail}`} className="text-indigo-600 dark:text-indigo-400 hover:underline">{contactEmail}</a></p>
+                ) : (
+                  <p>Please contact the site owner directly.</p>
+                )}
               </div>
             </section>
           </div>

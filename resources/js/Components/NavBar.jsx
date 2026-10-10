@@ -14,6 +14,7 @@ import {
   faMoon
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from './Logo';
+import IfSignupsOpen from '@/Components/IfSignupsOpen';
 
 export default function NavBar() {
   const { auth } = usePage().props;
@@ -137,12 +138,14 @@ export default function NavBar() {
                 >
                   Log In
                 </Link>
-                <Link
-                  href={route('register')}
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-95"
-                >
-                  Get Started
-                </Link>
+                <IfSignupsOpen>
+                  <Link
+                    href={route('register')}
+                    className="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold transition-all hover:bg-indigo-700 hover:shadow-lg active:scale-95"
+                  >
+                    Get Started
+                  </Link>
+                </IfSignupsOpen>
               </>
             )}
 

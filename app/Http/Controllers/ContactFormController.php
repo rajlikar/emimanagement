@@ -39,18 +39,21 @@ class ContactFormController extends Controller
                 'status' => 'new',
             ]);
 
-            // Send confirmation email to the user
-            try {
-                Mail::to('recipient@email.com')->send(new ContactFormReceived($contactForm));
-            } catch (\Exception $e) {
-                Log::error('Failed to send confirmation email: ' . $e->getMessage());
-                // Don't fail the form submission if email fails
+            // Notify the owner, if an address is configured. This used to mail a
+            // hardcoded placeholder (recipient@email.com), i.e. a stranger's domain.
+            if ($owner = config('app.contact_email')) {
+                try {
+                    Mail::to($owner)->send(new ContactFormReceived($contactForm));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send contact notification: ' . $e->getMessage());
+                    // Don't fail the form submission if email fails
+                }
             }
 
-            return redirect()->back()->with('success', 'Thank you for contacting us! We have received your message and will get back to you within 24 hours.');
+            return redirect()->back()->with('success', 'Thank you for your message. It has been recorded.');
         } catch (\Throwable $th) {
             Log::error('Contact form submission failed: ' . $th->getMessage());
-            return redirect()->back()->with('error', 'Failed to send message. Please try again or contact us directly at support@emipro.com');
+            return redirect()->back()->with('error', 'Failed to send message. Please try again later.');
         }
     }
 

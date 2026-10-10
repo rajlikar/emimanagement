@@ -356,7 +356,7 @@ export default function Show({ mustVerifyEmail, user, loanDetail, emiDetail, doc
                                             <div key={doc.id} className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl border border-gray-100 dark:border-gray-600">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm font-bold text-gray-900 dark:text-white">{doc.document}</span>
-                                                    <a href={`/storage/${doc.path}`} target="_blank" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200">
+                                                    <a href={`/loan-document/${doc.id}/download`} target="_blank" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200">
                                                         <FontAwesomeIcon icon={faDownload} />
                                                     </a>
                                                 </div>

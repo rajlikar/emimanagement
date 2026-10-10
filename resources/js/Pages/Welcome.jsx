@@ -10,6 +10,7 @@ import {
     faUserPlus
 } from "@fortawesome/free-solid-svg-icons";
 import Logo from '@/Components/Logo';
+import IfSignupsOpen from '@/Components/IfSignupsOpen';
 
 export default function Welcome({ auth }) {
     return (
@@ -29,14 +30,14 @@ export default function Welcome({ auth }) {
                     <div className="space-y-8">
                         <div className="inline-flex items-center px-4 py-2 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-sm font-bold border border-indigo-100 dark:border-indigo-800">
                             <span className="flex h-2 w-2 rounded-full bg-indigo-600 mr-2 animate-pulse"></span>
-                            Trusted by 10,000+ Smart Savers
+                            A private EMI tracker
                         </div>
                         <h1 className="text-5xl lg:text-7xl font-black text-gray-900 dark:text-white leading-[1.1] tracking-tight">
                             Take Control of Your <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">EMI Portfolio</span>
                         </h1>
                         <p className="text-lg text-gray-600 dark:text-gray-400 max-w-xl mx-auto lg:mx-0">
-                            The professional way to track, manage, and optimize your loan repayments. Stay ahead of your dues with our comprehensive EMI Management platform.
+                            Keep your loans, EMI schedules and due dates in one place, and stay ahead of what is due next.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             {auth?.user ? (
@@ -48,19 +49,21 @@ export default function Welcome({ auth }) {
                                 </Link>
                             ) : (
                                 <>
-                                    <Link
-                                        href={route('register')}
-                                        className="px-8 py-4 rounded-2xl bg-indigo-600 text-white font-black text-lg shadow-xl shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
-                                    >
-                                        <FontAwesomeIcon icon={faUserPlus} />
-                                        Start Free Trial
-                                    </Link>
+                                    <IfSignupsOpen>
+                                        <Link
+                                            href={route('register')}
+                                            className="px-8 py-4 rounded-2xl bg-indigo-600 text-white font-black text-lg shadow-xl shadow-indigo-200 dark:shadow-indigo-900/40 hover:bg-indigo-700 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+                                        >
+                                            <FontAwesomeIcon icon={faUserPlus} />
+                                            Create Account
+                                        </Link>
+                                    </IfSignupsOpen>
                                     <Link
                                         href={route('login')}
                                         className="px-8 py-4 rounded-2xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-black text-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95 flex items-center justify-center gap-2"
                                     >
                                         <FontAwesomeIcon icon={faSignInAlt} />
-                                        Member Log In
+                                        Log In
                                     </Link>
                                 </>
                             )}
@@ -105,9 +108,9 @@ export default function Welcome({ auth }) {
                         <div className="w-14 h-14 bg-green-50 dark:bg-green-900/30 rounded-2xl flex items-center justify-center text-green-600 dark:text-green-400 text-2xl mb-6">
                             <FontAwesomeIcon icon={faShieldAlt} />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Military-Grade</h3>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Private</h3>
                         <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                            Your financial data is encrypted and secure with our top-tier safety protocols.
+                            Served over HTTPS and stored on Google Cloud. Each account sees only its own loans and documents.
                         </p>
                     </div>
 
@@ -123,21 +126,6 @@ export default function Welcome({ auth }) {
                 </div>
 
                 {/* Trust Footer */}
-                <div className="max-w-4xl mx-auto mt-32 text-center flex flex-col items-center">
-                    <div className="flex -space-x-3 mb-6">
-                        {[1, 2, 3, 4, 5].map(i => (
-                            <div key={i} className="w-12 h-12 rounded-full border-4 border-white dark:border-gray-800 bg-gray-200 overflow-hidden">
-                                <img src={`https://i.pravatar.cc/150?u=${i}`} alt="user" />
-                            </div>
-                        ))}
-                        <div className="w-12 h-12 rounded-full border-4 border-white dark:border-gray-800 bg-indigo-600 flex items-center justify-center text-white text-xs font-black">
-                            +10k
-                        </div>
-                    </div>
-                    <p className="text-gray-500 dark:text-gray-400 font-medium">
-                        Join thousands of users who have streamlined their finances with our EMI Management platform.
-                    </p>
-                </div>
             </main>
 
             {/* Final Footer */}
